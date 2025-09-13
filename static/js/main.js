@@ -40,7 +40,7 @@
             }
         }
         else if($(input).attr('name') == 'rpass2') {
-            let pass=$("#pass2").val();
+            let pass=$("#passr").val();
             if($(input).val() != pass){
                 return false;
             }

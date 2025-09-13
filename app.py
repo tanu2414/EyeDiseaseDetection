@@ -3,7 +3,6 @@ from werkzeug.utils import secure_filename
 from flask import Flask, flash, render_template, redirect, request, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import numpy as np
 import torch
 import numpy as np
 from PIL import Image
@@ -14,17 +13,19 @@ from datetime import datetime
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png',
-                      'jpg', 'jpeg', 'gif', 'zip', 'csv', 'png'}
+                      'jpg', 'jpeg', 'gif', 'zip', 'csv'}
 
-app = Flask(__name__)
-db=SQLAlchemy()
-db_connect_time = datetime.now().strftime("%Y%m%d")
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY']='20241111'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+db = SQLAlchemy()
 db.init_app(app)
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Create uploads directory if it doesn't exist
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 
 class User(db.Model):
@@ -54,7 +55,7 @@ def index():
                 print("Going dash")
                 return redirect(url_for('dashboard'))
             else:
-                return "-1"#render_template("index.html")
+                return "-1"
 
     return render_template("index.html")
 
@@ -71,7 +72,7 @@ def register():
     return render_template("register.html")
 
 @app.route('/dashboard',methods=['GET','POST'])
-def dashboad():
+def dashboard():
     return render_template('dashboard.html')
 
 @app.route('/uploads/<name>')
@@ -137,5 +138,7 @@ def predict_image(name):
     return render_template("output.html", ed=class_names[predicted_index],edd=class_names_def[predicted_index])
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
 
